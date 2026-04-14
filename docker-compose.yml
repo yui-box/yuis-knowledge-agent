@@ -9,6 +9,7 @@ services:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
+      - ./postgres/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
 
   app:
     build:
@@ -19,7 +20,7 @@ services:
     depends_on:
       - postgres
     environment:
-      DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-knowledge_agent}
+      DATABASE_URL: postgresql://${APP_DB_USER:-app}:${APP_DB_PASSWORD:-app}@postgres:5432/${POSTGRES_DB:-knowledge_agent}
 
 volumes:
   postgres_data:
