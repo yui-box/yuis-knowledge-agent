@@ -12,6 +12,23 @@ services:
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./postgres/init.sql:/docker-entrypoint-initdb.d/init.sql:ro
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-knowledge_agent}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  migrate:
+    image: node:20-alpine
+    working_dir: /app
+    volumes:
+      - ./src:/app
+    command: sh -c "npm ci --quiet && npm run db:migrate"
+    depends_on:
+      postgres:
+        condition: service_healthy
+    environment:
+      DATABASE_ADMIN_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-knowledge_agent}
 
   app:
     build:
